@@ -44,7 +44,7 @@ headLeg.SetTextSize(0.030)
 headLeg.AddEntry("NULL","CMS Simulation 2015: gg #rightarrow H #rightarrow #tau #tau - #sqrt{s}=13 TeV, bx=25ns, <PU>=40","h")
 
 #############
-
+# barrel / endcap
 
 SetColors(pt_EB[0], kRed)
 SetColors(pt_EE[0], kBlue)
@@ -65,7 +65,7 @@ canv1.Print ("resolution_barr_endc.pdf")
 
 
 ############
-
+# eta Stage2 / run I
 
 canv2 = TCanvas ("canv2", "canv2")
 
@@ -93,6 +93,7 @@ canv2.Print("eta_resol_vs_RunI.pdf", "pdf")
 
 
 ############
+# phi Stage2 / run I
 
 
 canv3 = TCanvas ("canv3", "canv3")
@@ -117,6 +118,9 @@ headLeg.Draw()
 legPhi.Draw()
 legSigmaPhi.Draw()
 canv3.Print("phi_resol_vs_RunI.pdf", "pdf")
+
+###########
+
 
 
 raw_input()
