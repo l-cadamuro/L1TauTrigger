@@ -15,6 +15,8 @@ pt_EE = []
 pt_All = []
 phi = []
 eta = []
+grResolEta = []
+grResolPt = []
 
 for i in [0,1]:
     pt_EB.append(fileList[i].Get("pt_resol_EB"))
@@ -22,11 +24,12 @@ for i in [0,1]:
     pt_All.append(fileList[i].Get("pt_resol_All"))
     phi.append(fileList[i].Get("phi_resol_All"))
     eta.append(fileList[i].Get("eta_resol_All"))
-
+    grResolEta.append(fileList[i].Get("resolution_vs_eta_plot"))
+    grResolPt.append(fileList[i].Get("resolution_vs_pT_plot"))
 # set all npx to 1000
 for i in [0,1]:
-    pt_EB[i].GetFunction("CBFuncAsymm").SetNpx(1000)
-    pt_EE[i].GetFunction("CBFuncAsymm").SetNpx(1000)
+    pt_EB[i].GetFunction("CBFuncAsymm").SetNpx(1000) #non eccede mai la risoluzione dei 100 px... ?
+    pt_EE[i].GetFunction("CBFuncAsymm").SetNpx(1000) # ma se scendo sotto (e.g. 10) si vede la differenza!
     pt_All[i].GetFunction("CBFuncAsymm").SetNpx(1000)
 
 eta[0].GetFunction("CBFunc").SetNpx(1000)
@@ -48,7 +51,8 @@ headLeg.AddEntry("NULL","CMS Simulation 2015: gg #rightarrow H #rightarrow #tau 
 
 SetColors(pt_EB[0], kRed)
 SetColors(pt_EE[0], kBlue)
-pt_EE[0].GetFunction("CBFuncAsymm").SetLineColor(kBlue)
+pt_EE[0].GetFunction("CBFuncAsymm").SetLineColor(kAzure+5)
+pt_EB[0].GetFunction("CBFuncAsymm").SetLineColor(kOrange+8)
 
 leg = TLegend (0.50, 0.66, 0.88, 0.797)
 leg.SetFillStyle(0)
@@ -118,6 +122,81 @@ legPhi.Draw()
 legSigmaPhi.Draw()
 canv3.Print("phi_resol_vs_RunI.pdf", "pdf")
 
+
+############
+# compare pt resolution (inclusive) for Run I and now
+canv4 = TCanvas ("canv4", "canv4")
+
+SetColors(pt_All[0], kBlue)
+SetColors(pt_All[1], kRed)
+pt_All[0].GetFunction("CBFuncAsymm").SetLineColor(kAzure+5)
+pt_All[1].GetFunction("CBFuncAsymm").SetLineColor(kOrange+8)
+legRun = TLegend (0.50, 0.66, 0.88, 0.797)
+legRun.SetFillStyle(0)
+#leg.SetTextFont(72)
+legRun.AddEntry(pt_All[0], "Upgrade 2016", "lp")
+legRun.AddEntry(pt_All[1], "Run I (rescaled)", "lp")
+
+pt_All[0].SetMaximum(0.08)
+pt_All[0].Draw()
+pt_All[1].Draw("same")
+#pt_EB[0].SetMaximum(0.08) # tried as a test
+#pt_EB[0].Draw()
+#pt_EB[1].Draw("same")
+
+headLeg.Draw()
+legRun.Draw()
+
+canv4.Print ("resolution_Stage2_RunI.pdf")
+
+############
+# compare resolution plots - eta
+canv5 = TCanvas ("canv5", "canv5")
+SetColors(grResolEta[0], kBlue)
+SetColors(grResolEta[1], kRed)
+
+legRunResEta = TLegend (0.19, 0.68, 0.57, 0.81)
+#legRunResEta.SetFillStyle(0)
+legRunResEta.SetFillColor(kWhite)
+legRunResEta.SetBorderSize(1)
+#legRunResEta.SetLineColor(kBlack)
+#leg.SetTextFont(72)
+legRunResEta.AddEntry(grResolEta[0], "Upgrade 2016", "lp")
+legRunResEta.AddEntry(grResolEta[1], "Run I", "lp")
+
+grResolEta[0].GetYaxis().SetTitle ("Energy resolution")
+grResolEta[0].SetMinimum(0.15)
+grResolEta[0].SetMaximum(0.30)
+grResolEta[0].Draw()
+grResolEta[1].Draw("same")
+headLeg.Draw()
+legRunResEta.Draw()
+canv5.Print("resolution_vs_eta.pdf", "pdf")
+
+
+###############
+# compare resolution plots - pt
+canv6 = TCanvas ("canv6", "canv6")
+SetColors(grResolPt[0], kBlue)
+SetColors(grResolPt[1], kRed)
+
+legRunResPt = TLegend (0.19, 0.18, 0.57, 0.31)
+#legRunResEta.SetFillStyle(0)
+legRunResPt.SetFillColor(kWhite)
+legRunResPt.SetBorderSize(1)
+#legRunResEta.SetLineColor(kBlack)
+#leg.SetTextFont(72)
+legRunResPt.AddEntry(grResolPt[0], "Upgrade 2016", "lp")
+legRunResPt.AddEntry(grResolPt[1], "Run I", "lp")
+
+grResolPt[0].GetYaxis().SetTitle ("Energy resolution")
+grResolPt[0].SetMinimum(0.)
+grResolPt[0].SetMaximum(0.30)
+grResolPt[0].Draw()
+grResolPt[1].Draw("same")
+headLeg.Draw()
+legRunResPt.Draw()
+canv6.Print("resolution_vs_pt.pdf", "pdf")
 
 raw_input()
 
