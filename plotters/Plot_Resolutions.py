@@ -4,8 +4,8 @@ from LucaStyle import *
 LS = SetLucaStyle(0)
 gROOT.ForceStyle(1)
 
-fileStage2 = TFile.Open ("../Common/resolutions_histo_gg_Stage2_WithHPSIso_eta2p1.root")
-fileRunI = TFile.Open ("../Common/resolutions_histo_gg_RunI.root")
+fileStage2 = TFile.Open ("../Common/resolutions_histo_gg_Stage2_WithHPSIso_eta2p1_ptMin20.00.root")
+fileRunI = TFile.Open ("../Common/resolutions_histo_gg_RunI_ptMin20.00.root")
 
 # speed up with structure 0: STage2 -- 1: Run1
 fileList = [fileStage2, fileRunI]
@@ -159,7 +159,7 @@ canv5 = TCanvas ("canv5", "canv5")
 SetColors(grResolEta[0], kBlue)
 SetColors(grResolEta[1], kRed)
 
-legRunResEta = TLegend (0.19, 0.68, 0.57, 0.81)
+legRunResEta = TLegend (0.19, 0.18, 0.57, 0.31)
 #legRunResEta.SetFillStyle(0)
 legRunResEta.SetFillColor(kWhite)
 legRunResEta.SetBorderSize(1)
@@ -169,7 +169,7 @@ legRunResEta.AddEntry(grResolEta[0], "Upgrade 2016", "lp")
 legRunResEta.AddEntry(grResolEta[1], "Run I", "lp")
 
 grResolEta[0].GetYaxis().SetTitle ("Energy resolution")
-grResolEta[0].SetMinimum(0.15)
+grResolEta[0].SetMinimum(0.0)
 grResolEta[0].SetMaximum(0.30)
 grResolEta[0].Draw()
 grResolEta[1].Draw("same")
@@ -195,7 +195,8 @@ legRunResPt.AddEntry(grResolPt[1], "Run I", "lp")
 
 grResolPt[0].GetYaxis().SetTitle ("Energy resolution")
 grResolPt[0].SetMinimum(0.)
-grResolPt[0].SetMaximum(0.30)
+grResolPt[0].SetMaximum(0.35)
+grResolPt[0].GetXaxis().SetRangeUser(20., 150.)
 grResolPt[0].Draw()
 grResolPt[1].Draw("same")
 headLeg.Draw()

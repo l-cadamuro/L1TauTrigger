@@ -212,71 +212,54 @@ double EffectiveRMS (TH1D* h)
 
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+
 void Eval_resolution()
 {
 
-    TH1::SetDefaultSumw2();
-	//setTDRStyle();
-    TF1* CBFunc = new TF1("CBFunc",&CrystalBall,-0.3,0.3,5);
-    TF1* CBFuncAsymm = new TF1("CBFuncAsymm",&DoubleCrystalBall,0.,3.,7);
-    TF1* CBFuncAsymmDoubleGaus = new TF1("CBFuncAsymmDoubleGaus",&DoubleCrystalBallDoubleGaus,0.,3.,8);
+  TH1::SetDefaultSumw2();
+  //setTDRStyle();
+  TF1* CBFunc = new TF1("CBFunc",&CrystalBall,-0.3,0.3,5);
+  TF1* CBFuncAsymm = new TF1("CBFuncAsymm",&DoubleCrystalBall,0.,3.,7);
+  TF1* CBFuncAsymmDoubleGaus = new TF1("CBFuncAsymmDoubleGaus",&DoubleCrystalBallDoubleGaus,0.,3.,8);
 
-    bool doFits = true;
-    bool doFitsAngular = false; // set to false for Run I, clearly not a CB!!
-    bool scaleL1Pt = true; // true to scale run I
-    double scaleFactor = 1.075/1.713; // mean of the Run I resolution distribution taken from the histogram, num is mean of Stage 2 to put both in the same spot!
-    //double fitLowPt = 0.6; double fitHighPt = 1.6; // "different fit range"
-    double fitLowPt = 0.8; double fitHighPt = 1.5; // normally used
+  bool IsRunI = true;
+  double L1MinPt = 20.; // pt cut to be applied on L1 candidates after rescaling
 
+  //////////////////////////////////////////////
+  // don't touch here, act on the switch "IsRunI"
+  // Stage 2 settings
+  bool doFits = true;
+  bool doFitsAngular = true; // set to false for Run I, clearly not a CB!!
+  bool scaleL1Pt = false; // true to scale run I
+  double scaleFactor = 1.075/1.713; // mean of the Run I resolution distribution taken from the histogram, num is mean of Stage 2 to put both in the same spot!
+  //double fitLowPt = 0.6; double fitHighPt = 1.6; // "different fit range"
+  double fitLowPt = 0.8; double fitHighPt = 1.5; // normally used
 
-    //TF1* CBFuncAsymm_clone = new TF1("CBFuncAsymm_clone",&DoubleCrystalBall,0.,3.,7);
-    //TF1* CBFuncAsymmDoubleGaus_clone = new TF1("CBFuncAsymmDoubleGaus_clone",&DoubleCrystalBallDoubleGaus,0.,3.,8);
-    //CBFuncAsymmDoubleGaus_clone->SetLineColor(kBlue);
-    //CBFuncAsymm_clone->SetLineColor(kBlue);
-    //TF1* DoubleGaus = new TF1("DoubleGaus",&DoubleGaussian,0.,3.,4);
-    
-    /*
-    CBFunc->SetNpx(1000);
-    CBFuncAsymm->SetNpx(1000);
-    CBFuncAsymm_clone->SetNpx(1000);
-    CBFuncAsymmDoubleGaus -> SetNpx(1000);
-    CBFuncAsymmDoubleGaus_clone -> SetNpx(1000);
-    
+  if (IsRunI)
+  {
+    doFitsAngular = false;
+    scaleL1Pt = true;
+  }
 
-	  gStyle ->SetOptStat(0);
-    gStyle->SetTickLength(0.02,"X");
-    gStyle->SetTickLength(0.02,"Y");
-	  gStyle->SetPadTickY(1);
-    gStyle->SetPadTickX(1);
-    //gStyle->SetPadTopMargin(0.05);
-    //gStyle->SetPadBottomMargin(0.13);
-    gStyle->SetPadLeftMargin(0.16);
-    gStyle->SetTitleYOffset(1.4);
-    gStyle->SetTitleXOffset(0.9);
-    gStyle->SetLabelOffset(0.009, "XYZ");
+  TFile* fInput;
+  TString fOutName = "";
 
-    //gStyle->SetPadRightMargin(0.02);
-    //TApplication theApp("App",&argc,argv);
-	  */
-	// open ROOT file -> filtered paricles!
-	
-	// uncalib pT
-	//TFile* fInput = new TFile ("filtered_taus_WithHPSIsorequirement.root"); // with hps iso
-	//TFile* fInput = new TFile ("filtered_taus_NoHPSIsorequirement.root"); // without hps iso
-  //TFile* fInput = new TFile ("filtered_taus_WithHPSIsorequirement_ReverseMatch_v7.root");
-  //TFile* fInput = new TFile ("filtered_taus_NoHPSIsorequirement_ReverseMatch_v7.root"); // min dR
-  //TFile* fInput = new TFile ("filtered_taus_tree_reverse_noHPSIso_maxPt.root"); // max pT --> no change wrt mindR
-  //TFile* fInput = new TFile ("filtered_taus_tree_reverse_noHPSIso_noAmbigResol.root"); // no amvbiguities resolution as Luca M was doing
-  //TFile* fInput = new TFile ("filtered_taus_gg_noHPSIso_etaOptim_PUS_forEPS.root");
-  //TFile* fInput = new TFile ("filtered_taus_VBF_noHPSIso_etaOptim_PUS_forEPS.root");
- 
-  // firmware optim, eta 2.1, gg, With Hps iso
-  //TFile* fInput = new TFile ("/home/llr/cms/cadamuro/Level1_Stage2_PUSubDevel/PUSMacros/filtered_taus_gg_WithHPSIso_eta2p1_PUS_forEPS.root"); 
-  //TString fOutName = "resolutions_histo_gg_Stage2_WithHPSIso_eta2p1.root";
-  
-  // Run I, gg, With Hps Iso
-  TFile* fInput = new TFile ("../RunILegacyTrigger/filtered_taus_L1LegacyRunI_gg_bx25Pu40E13TeVWithHpsIso.root"); 
-  TString fOutName = "resolutions_histo_gg_RunI.root";
+  if (!IsRunI)
+  {
+    // firmware optim, eta 2.1, gg, With Hps iso
+    fInput = new TFile ("/home/llr/cms/cadamuro/Level1_Stage2_PUSubDevel/PUSMacros/filtered_taus_gg_WithHPSIso_eta2p1_PUS_forEPS.root"); 
+    fOutName = Form ("resolutions_histo_gg_Stage2_WithHPSIso_eta2p1_ptMin%.2f.root", L1MinPt);
+  }
+  else
+  {
+    // Run I, gg, With Hps Iso
+    fInput = new TFile ("../RunILegacyTrigger/filtered_taus_L1LegacyRunI_gg_bx25Pu40E13TeVWithHpsIso.root"); 
+    fOutName = Form("resolutions_histo_gg_RunI_ptMin%.2f.root", L1MinPt);
+  }
 
 	TTree* tInput = (TTree*) fInput->Get("filtered_taus_tree");
 	
@@ -330,10 +313,10 @@ void Eval_resolution()
 
   double lowEta = 0.; double highEta = 2.1;
   //double lowEta = 1.2; double highEta = 1.8;
-  double lowPt = 0.; double highPt = 100.;
+  double lowPt = 0.; double highPt = 150.;
 
-  TH2D* pT_resol_binned = new TH2D ("pT_resol_binned_hpseta", "eta bin vs pT resolution; #eta; resol", 10, lowEta, highEta, 100, 0, 3);
-  TH2D* pT_resol_binned_hpsPt = new TH2D ("pT_resol_binned_hpsPt", "pt bin vs pT resolution; pt offline; resol", 10, lowPt, highPt, 100, 0, 3);
+  TH2D* pT_resol_binned = new TH2D ("pT_resol_binned_hpseta", "eta bin vs pT resolution; #eta; resol", 21, lowEta, highEta, 100, 0, 3);
+  TH2D* pT_resol_binned_hpsPt = new TH2D ("pT_resol_binned_hpsPt", "pt bin vs pT resolution; pt offline; resol", 30, lowPt, highPt, 100, 0, 3);
 
   TH1D* pt_resol_decMode[4];
 	TH1D* eta_resol_decMode[4];
@@ -376,12 +359,13 @@ void Eval_resolution()
 		float absEta = TMath::Abs(L1_eta);
     //int prodMode = GetTauClusterProductionMode (L1_flags); // 0 : can Be Merged, 3: not merged (no neighbours)
 
-		// discard L1 taus with pt < 20 GeV (all , pre rescaling)
-		if (L1_pt < 20) continue;
     if (scaleL1Pt) L1_pt *= scaleFactor;
     //if (prodMode != 3) continue;
 
-		// fill istos
+    // dicard taus with pt under threshold after rescaling
+    if (L1_pt <= L1MinPt) continue;
+		
+    // fill istos
 		if (TMath::Abs(hps_eta) < 1.305)
 		{
 			pt_resol_EB -> Fill (L1_pt / hps_pt);
