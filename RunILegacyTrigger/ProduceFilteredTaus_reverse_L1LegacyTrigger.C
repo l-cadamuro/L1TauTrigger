@@ -30,6 +30,7 @@
 #include "TProfile.h"
 #include "TMath.h"
 #include "TStyle.h"
+#include"TGraphAsymmErrors.h"
 #include <iostream>
 #include <algorithm>
 
@@ -78,6 +79,7 @@ int main(int argc, char** argv)
     // gg fusion
     TFile* fInput = new TFile ("/data_CMS/cms/cadamuro/L1_trigger_data/RunI_Legacy_trigger_trees/ggFusion/RunI_LegacyL1_ggFusion_bx25Pu40E13TeV.root");
     TString outFile = "filtered_taus_L1LegacyRunI_gg_bx25Pu40E13TeV";
+    //TString outFile = "MyTestOnlyPi0Dr1p0SolveByPt";
     if (SkipHPSIso) outFile += "NoHpsIso.root";
     else outFile += "WithHpsIso.root";
 
@@ -85,7 +87,7 @@ int main(int argc, char** argv)
     
     // configuration - ambiguities handling
     const bool resolveL1Ambiguities = true; // if false: take the last "good" L1 (like Luca M was doing)
-    const bool resolveL1bydR = true; // true: min dR -- false: max pT
+    const bool resolveL1bydR = false; // true: min dR -- false: max pT
     
     cout << "Resolve L1-HPS match ambiguities: " << resolveL1Ambiguities << endl;
     cout << "Resolve L1-HPS ambiguities by dR: " <<  resolveL1bydR << endl;
@@ -228,6 +230,21 @@ int main(int argc, char** argv)
     // matching phase
     /////////////////////
 
+    // histos for the matching efficiency as a function of pt, eta, phi
+    // 0: hps-gen PRE MATCH  
+    // 1: hps-gen POST MATCH  
+    // 2: hps-L1 PRE MATCH  
+    // 3: hps-L1 PRE MATCH  
+    TH1D* matchEffEta [4];
+    TH1D* matchEffPhi [4];
+    TH1D* matchEffPt [4];
+    for (int i = 0; i < 4; i++)
+    {
+        matchEffEta[i] = new TH1D (Form("match_eff_eta_%i", i), Form("match_eff_eta_%i;hps or gen eta; N", i), 150, -3., 3.);
+        matchEffPhi[i] = new TH1D (Form("match_eff_phi_%i", i), Form("match_eff_phi_%i;hps or gen phi; N", i), 150, -1.*TMath::Pi(), TMath::Pi());
+        matchEffPt[i] = new TH1D (Form("match_eff_pt_%i", i), Form("match_eff_pt_%i;hps or gen Pt; N", i), 150, 0, 150);
+    }
+
     int nEvents = tInput->GetEntries(); 
     //int nEvents = 1000; 
     
@@ -246,6 +263,9 @@ int main(int argc, char** argv)
     vector<float> v_L1dR; // use to resolve ambiguities with smallest dR
     vector<float> v_L1pT; // use to resolve ambiguities with highest pT
     
+    int multHpsGen = 0;
+    int multHpsL1 = 0;
+
     // loop on all events
     for (int iEv = 0; iEv < nEvents; iEv++)
     {
@@ -255,6 +275,8 @@ int main(int argc, char** argv)
         // loop on all gen taus
         for (int iGen = 0; iGen < nGen; iGen++)
         {
+            //if (GenDecayMode[iGen] != 0) continue; // JUST FOR TEST, filter on only one progs
+
             // reset triplet indexes, initializing genIndex to current gen particle index
             genIndex = iGen;
             hpsIndex = -1;
@@ -268,6 +290,9 @@ int main(int argc, char** argv)
             
             nTausIn++;
             
+            matchEffEta[0]->Fill (GenEta[genIndex]);
+            matchEffPhi[0]->Fill (GenPhi[genIndex]);
+            matchEffPt[0]->Fill (GenPt[genIndex]);
             /////// HPS match ////////
             // search for match with the hps candidate 
             for (int iHps = 0; iHps < nHps; iHps++)
@@ -282,6 +307,8 @@ int main(int argc, char** argv)
                 }
             }
             
+            if (v_hpsdR.size()>1) multHpsGen++;
+
             // now find hps index corresponding to minimum dR
             vector<float>::iterator mindr_hps_ptr = min_element (begin(v_hpsdR), end(v_hpsdR));
             if (mindr_hps_ptr != end (v_hpsdR)) // check if vector is non empty
@@ -294,6 +321,15 @@ int main(int argc, char** argv)
             // continue with L1 matching only if hps match was positive
             if (hpsIndex > -1)
             {
+                // update eff counters
+                matchEffEta[1]->Fill (GenEta[genIndex]);
+                matchEffPhi[1]->Fill (GenPhi[genIndex]);
+                matchEffPt[1]->Fill (GenPt[genIndex]);
+
+                matchEffEta[2]->Fill (HpsEta[hpsIndex]);
+                matchEffPhi[2]->Fill (HpsPhi[hpsIndex]);
+                matchEffPt[2]->Fill (HpsPt[hpsIndex]);
+
                 // loop on all L1 candidates
                 for (int iL1 = 0; iL1 < trig_L1tau_N; iL1++)
                 {
@@ -306,7 +342,10 @@ int main(int argc, char** argv)
                         v_L1pT.push_back( (*TauCalibPt)[iL1] );
                     } 
                 }
-                   
+                
+                if (v_L1dR.size()>1) multHpsL1++;
+
+
                 // resolve ambiguities                
                 if (resolveL1Ambiguities)
                 {            
@@ -345,6 +384,12 @@ int main(int argc, char** argv)
             // save output only if triplet is complete
             if (genIndex > -1 && hpsIndex > -1 && L1Index > -1)
             {
+                // update eff counters
+                matchEffEta[3]->Fill (HpsEta[hpsIndex]);
+                matchEffPhi[3]->Fill (HpsPhi[hpsIndex]);
+                matchEffPt[3]->Fill (HpsPt[hpsIndex]);
+
+
                 gen_pt = GenPt [genIndex];
                 gen_eta = GenEta [genIndex];
                 gen_phi = GenPhi [genIndex];
@@ -374,7 +419,42 @@ int main(int argc, char** argv)
     // loop on events finished, write tree and print statistics
     cout << "Finished, selected " << nTausOut << " triplets on " << nTausIn << " input gen level taus" << endl;
     cout << "SkipHPSIso value for this selection was: " << SkipHPSIso << endl;
+    cout << "Multiples gen - hps match resolved in " << multHpsGen << " cases" << endl;
+    cout << "Multiples hps - L1 match resolved in " << multHpsL1 << " cases" << endl;
+
+    // now compute matching efficiency with rations
+    TGraphAsymmErrors* eta_HPS_GEN = new TGraphAsymmErrors();
+    TGraphAsymmErrors* phi_HPS_GEN = new TGraphAsymmErrors();
+    TGraphAsymmErrors* pt_HPS_GEN = new TGraphAsymmErrors();
+
+    TGraphAsymmErrors* eta_HPS_L1 = new TGraphAsymmErrors();
+    TGraphAsymmErrors* phi_HPS_L1 = new TGraphAsymmErrors();
+    TGraphAsymmErrors* pt_HPS_L1 = new TGraphAsymmErrors();
+
+    eta_HPS_GEN->SetName ("eff_eta_HPS_GEN");
+    phi_HPS_GEN->SetName ("eff_phi_HPS_GEN");
+    pt_HPS_GEN->SetName ("eff_pt_HPS_GEN");
+
+    eta_HPS_L1->SetName ("eff_eta_HPS_L1");
+    phi_HPS_L1->SetName ("eff_phi_HPS_L1");
+    pt_HPS_L1->SetName ("eff_pt_HPS_L1");
+
+    eta_HPS_GEN -> BayesDivide (matchEffEta[1], matchEffEta[0]);
+    phi_HPS_GEN -> BayesDivide (matchEffPhi[1], matchEffPhi[0]);
+    pt_HPS_GEN -> BayesDivide (matchEffPt[1], matchEffPt[0]);
+
+    eta_HPS_L1 -> BayesDivide (matchEffEta[3], matchEffEta[2]);
+    phi_HPS_L1 -> BayesDivide (matchEffPhi[3], matchEffPhi[2]);
+    pt_HPS_L1 -> BayesDivide (matchEffPt[3], matchEffPt[2]);
+
     tOutput->Write();
+    eta_HPS_GEN->Write();
+    phi_HPS_GEN->Write();
+    pt_HPS_GEN->Write();
+    eta_HPS_L1->Write();
+    phi_HPS_L1->Write();
+    pt_HPS_L1->Write();
     fOutput->Close();
+
     return 1;
 }

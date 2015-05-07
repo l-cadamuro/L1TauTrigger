@@ -276,7 +276,7 @@ void Eval_resolution()
   
   // Run I, gg, With Hps Iso
   TFile* fInput = new TFile ("../RunILegacyTrigger/filtered_taus_L1LegacyRunI_gg_bx25Pu40E13TeVWithHpsIso.root"); 
-  TString fOutName = "resolutions_histo_gg_RunI_Scaled.root";
+  TString fOutName = "resolutions_histo_gg_RunI.root";
 
 	TTree* tInput = (TTree*) fInput->Get("filtered_taus_tree");
 	
