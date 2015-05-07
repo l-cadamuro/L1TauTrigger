@@ -222,9 +222,9 @@ void Eval_resolution()
     TF1* CBFuncAsymmDoubleGaus = new TF1("CBFuncAsymmDoubleGaus",&DoubleCrystalBallDoubleGaus,0.,3.,8);
 
     bool doFits = true;
-    bool doFitsAngular = true; // set to false for Run I, clearly not a CB!!
-    bool scaleL1Pt = false; // true to scale run I
-    double scaleFactor = 1./1.713; // mean of the Run I resolution distribution taken from the histogram
+    bool doFitsAngular = false; // set to false for Run I, clearly not a CB!!
+    bool scaleL1Pt = true; // true to scale run I
+    double scaleFactor = 1.075/1.713; // mean of the Run I resolution distribution taken from the histogram, num is mean of Stage 2 to put both in the same spot!
     //double fitLowPt = 0.6; double fitHighPt = 1.6; // "different fit range"
     double fitLowPt = 0.8; double fitHighPt = 1.5; // normally used
 
@@ -271,12 +271,12 @@ void Eval_resolution()
   //TFile* fInput = new TFile ("filtered_taus_VBF_noHPSIso_etaOptim_PUS_forEPS.root");
  
   // firmware optim, eta 2.1, gg, With Hps iso
-  TFile* fInput = new TFile ("/home/llr/cms/cadamuro/Level1_Stage2_PUSubDevel/PUSMacros/filtered_taus_gg_WithHPSIso_eta2p1_PUS_forEPS.root"); 
-  TString fOutName = "resolutions_histo_gg_Stage2_WithHPSIso_eta2p1.root";
+  //TFile* fInput = new TFile ("/home/llr/cms/cadamuro/Level1_Stage2_PUSubDevel/PUSMacros/filtered_taus_gg_WithHPSIso_eta2p1_PUS_forEPS.root"); 
+  //TString fOutName = "resolutions_histo_gg_Stage2_WithHPSIso_eta2p1.root";
   
   // Run I, gg, With Hps Iso
-  //TFile* fInput = new TFile ("../RunILegacyTrigger/filtered_taus_L1LegacyRunI_gg_bx25Pu40E13TeVWithHpsIso.root"); 
-  //TString fOutName = "resolutions_histo_gg_RunI.root";
+  TFile* fInput = new TFile ("../RunILegacyTrigger/filtered_taus_L1LegacyRunI_gg_bx25Pu40E13TeVWithHpsIso.root"); 
+  TString fOutName = "resolutions_histo_gg_RunI.root";
 
 	TTree* tInput = (TTree*) fInput->Get("filtered_taus_tree");
 	

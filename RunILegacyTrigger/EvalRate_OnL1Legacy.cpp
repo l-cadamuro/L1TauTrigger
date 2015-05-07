@@ -15,12 +15,20 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
+    //double scaleRunI = 1./1.713;
+    double scaleRunI = 1.075/1.713;
+    bool doScaleRunI = true;
+
+    cout << "Do scale: " << doScaleRunI << endl;
+    cout << "Scale factor: " << scaleRunI << endl;
 
     // ZeroBias sample L1 (processed by Luca M)
-    TChain * tInput = new TChain ("produceNtuple/recoTree");
+    TChain * tInput = new TChain ("recoTree");
 
-    tInput -> Add ("/home/llr/cms/mastrolorenzo/data/CMSSW_6_1_2_SLHC3/src/Htautau/TriggerStudies/test/SingleMu/trees/data_ZeroBias_PU50_withMu/*.root");
-    TString fOutName = "rateL1Tau_L1Legacy_ZeroBiasPU50bx25E13TeV_forEPS.root";
+    tInput -> Add ("/data_CMS/cms/cadamuro/L1_trigger_data/RunI_Legacy_trigger_trees/ZeroBias/ZeroBias_RunI_190Files_Pruned.root");
+    TString fOutName = "rateL1Tau_L1Legacy_ZeroBiasPU50bx25E13TeV_forEPS";
+    if (doScaleRunI) fOutName += "RunIScaled.root";
+    else fOutName += "RunINotScaled.root";
 
 
     // set branch and variables
@@ -97,6 +105,8 @@ int main(int argc, char** argv)
             double abseta = TMath::Abs( (*trig_L1tau_eta)[iL1] );
             double tauPt  = (*trig_L1tau_et)[iL1];
             
+            if (doScaleRunI) tauPt = scaleRunI*tauPt;
+
             if (abseta < 2.2)
             {
                 pt_noiso.push_back (tauPt);
