@@ -22,7 +22,9 @@ void PlotDiTauRates_ForEPS()
 	float absRateScale = 0.001*(2448. * 299792. / 27.); // [khz] * nbunch * ligh speed / LHC lenght
     //float absRateScale  = 1.;
     
-    bool PlotRunI = true;
+    bool PlotRunI = false;
+    double plotYMax = 1.e4;
+    if (!PlotRunI) plotYMax = 1.e3;
 
     gStyle->SetOptStat(0);
 	gStyle ->SetOptStat(0);
@@ -40,10 +42,18 @@ void PlotDiTauRates_ForEPS()
     gStyle->SetLabelOffset(0.009, "XYZ");
 
     // for the moment, use the files already produced for EPS in old folder
-	TFile* f70 = new TFile ("/home/llr/cms/cadamuro/Level1_Stage2/CMSSW_7_1_0_pre8/src/macros/Htautau_fullyHad/ggFusionSamples/RateEvaluator/rateL1Tau_70eff_alsoShape_singleShapesVeto_eta2p1_ForEPS.root");
+	/*
+    TFile* f70 = new TFile ("/home/llr/cms/cadamuro/Level1_Stage2/CMSSW_7_1_0_pre8/src/macros/Htautau_fullyHad/ggFusionSamples/RateEvaluator/rateL1Tau_70eff_alsoShape_singleShapesVeto_eta2p1_ForEPS.root");
 	TFile* f80 = new TFile ("/home/llr/cms/cadamuro/Level1_Stage2/CMSSW_7_1_0_pre8/src/macros/Htautau_fullyHad/ggFusionSamples/RateEvaluator/rateL1Tau_80eff_alsoShape_singleShapesVeto_eta2p1_ForEPS.root");
 	TFile* f90 = new TFile ("/home/llr/cms/cadamuro/Level1_Stage2/CMSSW_7_1_0_pre8/src/macros/Htautau_fullyHad/ggFusionSamples/RateEvaluator/rateL1Tau_90eff_alsoShape_singleShapesVeto_eta2p1_ForEPS.root");
 	TFile* fStage1Iso = new TFile ("..//RunILegacyTrigger/rateL1Tau_L1Legacy_ZeroBiasPU50bx25E13TeV_forEPSRunIScaled.root");
+    */
+
+    // full datasets processed -- more stat
+    TFile* f70 = new TFile ("/home/llr/cms/cadamuro/Level1_Stage2/CMSSW_7_1_0_pre8/src/macros/Htautau_fullyHad/ggFusionSamples/RateEvaluator/rateL1Tau_70eff_alsoShape_singleShapesVeto_eta2p1_ForEPS_FullDataset.root");
+    TFile* f80 = new TFile ("/home/llr/cms/cadamuro/Level1_Stage2/CMSSW_7_1_0_pre8/src/macros/Htautau_fullyHad/ggFusionSamples/RateEvaluator/rateL1Tau_80eff_alsoShape_singleShapesVeto_eta2p1_ForEPS_FullDataset.root");
+    TFile* f90 = new TFile ("/home/llr/cms/cadamuro/Level1_Stage2/CMSSW_7_1_0_pre8/src/macros/Htautau_fullyHad/ggFusionSamples/RateEvaluator/rateL1Tau_90eff_alsoShape_singleShapesVeto_eta2p1_ForEPS_FullDataset.root");
+    TFile* fStage1Iso = new TFile ("../RunILegacyTrigger/rateL1Tau_L1Legacy_ZeroBiasPU50bx25E13TeV_forEPS_AllDatasetRunIScaled.root");
 
 	TH1D* rate_preIso = (TH1D*) f70->Get("RelativeRate_diTau_NoIso");
 	TH1D* r70 = (TH1D*) f70 -> Get ("RelativeRate_diTau");
@@ -78,10 +88,10 @@ void PlotDiTauRates_ForEPS()
 	rate_preIso->SetLineColor(kBlack);
 	r70->SetLineColor(kRed);
 	r80->SetLineColor(kBlue);
-	r90->SetLineColor(kGreen);
+	r90->SetLineColor(kGreen-3);
     r70shape->SetLineColor(kRed);
     r80shape->SetLineColor(kBlue);
-    r90shape->SetLineColor(kGreen);
+    r90shape->SetLineColor(kGreen-3);
 	rStage1Iso->SetLineColor(kOrange+2);
 	
 	rate_preIso->SetLineWidth(2);
@@ -144,7 +154,7 @@ void PlotDiTauRates_ForEPS()
     r70->GetYaxis()->SetTitle("Rate [kHz]");
     r70->GetXaxis()->SetRange(15., 100.);
     r70->SetMinimum(1.e-3);
-    r70->SetMaximum(1.e3);
+    r70->SetMaximum(plotYMax);
 
     r70->Draw();
 	r80->Draw("same");
@@ -158,7 +168,7 @@ void PlotDiTauRates_ForEPS()
 
 	TLegend* legend1;
     legend1 = new TLegend (0.05, 0.926, 0.887, 0.996);
-    legend1->AddEntry("NULL","CMS Simulation: Minimum Bias         #sqrt{s}=13 TeV, bx=25ns, PU=40","h");
+    legend1->AddEntry("NULL","CMS Simulation: Minimum Bias         #sqrt{s}=13 TeV, bx=25ns, <PU>=40","h");
     legend1->SetTextFont(62);
     //legend1->AddEntry("NULL","L1 Threshold : 30 GeV","h");
     legend1->SetLineColor(0);
@@ -182,6 +192,19 @@ void PlotDiTauRates_ForEPS()
          << " " << findCloser (r90, rateThis) << " " << findCloser (r90shape, rateThis)
          << " " << findCloser (r80, rateThis) << " " << findCloser (r80shape, rateThis)
          << " " << findCloser (r70, rateThis) << " " << findCloser (r70shape, rateThis) << endl;
+
+    rateThis = 3.;
+    cout << rateThis << " " << findCloser (rStage1Iso, rateThis) << " " << findCloser (rate_preIso, rateThis)
+         << " " << findCloser (r90, rateThis) << " " << findCloser (r90shape, rateThis)
+         << " " << findCloser (r80, rateThis) << " " << findCloser (r80shape, rateThis)
+         << " " << findCloser (r70, rateThis) << " " << findCloser (r70shape, rateThis) << endl;
+
+    rateThis = 10.;
+    cout << rateThis << " " << findCloser (rStage1Iso, rateThis) << " " << findCloser (rate_preIso, rateThis)
+         << " " << findCloser (r90, rateThis) << " " << findCloser (r90shape, rateThis)
+         << " " << findCloser (r80, rateThis) << " " << findCloser (r80shape, rateThis)
+         << " " << findCloser (r70, rateThis) << " " << findCloser (r70shape, rateThis) << endl;
+
 
 /*
     // print the rate for some interesting thresholds

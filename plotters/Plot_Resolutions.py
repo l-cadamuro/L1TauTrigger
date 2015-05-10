@@ -57,13 +57,27 @@ pt_EB[0].GetFunction("CBFuncAsymm").SetLineColor(kOrange+8)
 leg = TLegend (0.50, 0.66, 0.88, 0.797)
 leg.SetFillStyle(0)
 #leg.SetTextFont(72)
-leg.AddEntry(pt_EB[0], "barrel: #eta < 1.305", "lp")
+leg.AddEntry(pt_EB[0], "barrel: |#eta| < 1.305", "lp")
 leg.AddEntry(pt_EE[0], "endcap: |#eta| > 1.479", "lp")
+
+legSigmaB = TLegend (0.53, 0.49, 0.90, 0.54)
+legSigmaB.SetFillStyle(0)
+legSigmaB.SetTextSize(0.030)
+legSigmaB.AddEntry("NULL", "#sigma = 0.173 #pm 0.002", "h")
+legSigmaB.SetTextColor(pt_EB[0].GetMarkerColor())
+
+legSigmaE = TLegend (0.53, 0.44, 0.90, 0.49)
+legSigmaE.SetFillStyle(0)
+legSigmaE.SetTextSize(0.030)
+legSigmaE.AddEntry("NULL", "#sigma = 0.189 #pm 0.005", "h")
+legSigmaE.SetTextColor(pt_EE[0].GetMarkerColor())
 
 pt_EB[0].Draw()
 pt_EE[0].Draw("same")
 headLeg.Draw()
 leg.Draw()
+legSigmaB.Draw()
+legSigmaE.Draw()
 
 canv1.Print ("resolution_barr_endc.pdf")
 
@@ -141,9 +155,24 @@ legRun.SetFillStyle(0)
 legRun.AddEntry(pt_All[0], "Upgrade 2016", "lp")
 legRun.AddEntry(pt_All[1], "Run I (rescaled)", "lp")
 
+legSigmaSt2 = TLegend (0.53, 0.49, 0.90, 0.54)
+legSigmaSt2.SetFillStyle(0)
+legSigmaSt2.SetTextSize(0.030)
+legSigmaSt2.AddEntry("NULL", "#sigma = 0.182 #pm 0.002", "h")
+legSigmaSt2.SetTextColor(pt_All[0].GetMarkerColor())
+
+legSigmaRunI = TLegend (0.53, 0.44, 0.90, 0.49)
+legSigmaRunI.SetFillStyle(0)
+legSigmaRunI.SetTextSize(0.030)
+legSigmaRunI.AddEntry("NULL", "#sigma = 0.148 #pm 0.002", "h")
+legSigmaRunI.SetTextColor(pt_All[1].GetMarkerColor())
+
+
 pt_All[0].SetMaximum(0.08)
 pt_All[0].Draw()
 pt_All[1].Draw("same")
+legSigmaSt2.Draw()
+legSigmaRunI.Draw()
 #pt_EB[0].SetMaximum(0.08) # tried as a test
 #pt_EB[0].Draw()
 #pt_EB[1].Draw("same")

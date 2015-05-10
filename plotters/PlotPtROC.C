@@ -57,7 +57,6 @@ TMarker* DrawMarkerWP (int WP, TFile* fback, TFile* fsig, int markerStyle, int c
 
 void PlotPtROC()
 {
-	TGaxis::SetMaxDigits(2);
 	//gStyle->SetOptStat(0);
 	SetLucaStyle(0);
 

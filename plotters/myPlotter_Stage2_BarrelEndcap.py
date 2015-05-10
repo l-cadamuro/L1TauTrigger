@@ -181,7 +181,8 @@ legend1 = ROOT.TLegend (0.05, 0.926, 0.887, 0.996)
 legend1.AddEntry("NULL","CMS Simulation 2015: gg #rightarrow H #rightarrow #tau #tau - #sqrt{s}=13 TeV, bx=25ns, <PU>=40","h")
 legend1.SetFillStyle(0)
 legend1.SetBorderSize(0)
-legend1.SetTextSize(0.027)
+legend1.SetTextSize(0.030)
+legend1.SetTextFont(62)
 
 # legend for threshold
 legendTh = ROOT.TLegend (0.14, 0.82, 0.47, 0.88)

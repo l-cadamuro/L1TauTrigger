@@ -22,11 +22,14 @@ int main(int argc, char** argv)
     cout << "Do scale: " << doScaleRunI << endl;
     cout << "Scale factor: " << scaleRunI << endl;
 
-    // ZeroBias sample L1 (processed by Luca M)
-    TChain * tInput = new TChain ("recoTree");
-
-    tInput -> Add ("/data_CMS/cms/cadamuro/L1_trigger_data/RunI_Legacy_trigger_trees/ZeroBias/ZeroBias_RunI_190Files_Pruned.root");
-    TString fOutName = "rateL1Tau_L1Legacy_ZeroBiasPU50bx25E13TeV_forEPS";
+    // ZeroBias sample L1
+    //TChain * tInput = new TChain ("recoTree");
+    //tInput -> Add ("/data_CMS/cms/cadamuro/L1_trigger_data/RunI_Legacy_trigger_trees/ZeroBias/ZeroBias_RunI_190Files_Pruned.root");
+    // full sample over xrootd
+    TChain * tInput = new TChain ("produceNtuple/recoTree");
+    tInput -> Add ("root://polgrid4.in2p3.fr//dpm/in2p3.fr/home/cms/trivcat/store/user/lcadamur/L1_trees/RunITrigger/Tau_AOD_ZeroBias_RunITrigger_5Mag2015/Neutrino_Pt-2to20_gun/AOD_ZeroBias_RunITrigger_5Mag2015/150505_220411/0000/VtxTest_*.root");
+    TString fOutName = "rateL1Tau_L1Legacy_ZeroBiasPU50bx25E13TeV_forEPS_AllDataset";
+    
     if (doScaleRunI) fOutName += "RunIScaled.root";
     else fOutName += "RunINotScaled.root";
 

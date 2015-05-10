@@ -2,7 +2,7 @@
 // histoType = 0: histos with errors via sumw2() ==> set markers, not lines!
 TStyle* SetLucaStyle (int histoType = 0)
 {
-    TStyle *LS = new TStyle(*gStyle)
+    TStyle *LS = new TStyle(*gStyle);
     LS->SetName("LucaStyle");
     LS->SetTitle("Luca Style");
 
@@ -22,7 +22,7 @@ TStyle* SetLucaStyle (int histoType = 0)
     LS->SetTitleYOffset(1.4);
     LS->SetTitleXOffset(0.9);
     LS->SetLabelOffset(0.009, "XYZ");
-    LS->SetTitleSize(0.050, "XYZ")
+    LS->SetTitleSize(0.050, "XYZ");
 
     LS->SetCanvasDefH(600);
     LS->SetCanvasDefW(600);

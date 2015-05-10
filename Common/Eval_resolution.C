@@ -229,6 +229,8 @@ void Eval_resolution()
   bool IsRunI = true;
   double L1MinPt = 20.; // pt cut to be applied on L1 candidates after rescaling
 
+  bool EvalResolWithFit = false; // whether evaluate resolution as RMS/mean or with gaussian fit in the core
+
   //////////////////////////////////////////////
   // don't touch here, act on the switch "IsRunI"
   // Stage 2 settings
@@ -311,12 +313,21 @@ void Eval_resolution()
   // probably an effect of beamspot position (there is no difference as a function of phi)
   TH2D* eta_resol_binned = new TH2D ("eta_resol_binned", "#eta bin vs #eta resolution; #eta; resol", 10, 0, 2.1, 100, -0.3, 0.3);
 
+  // fixed binning
+  
   double lowEta = 0.; double highEta = 2.1;
   //double lowEta = 1.2; double highEta = 1.8;
   double lowPt = 0.; double highPt = 150.;
-
   TH2D* pT_resol_binned = new TH2D ("pT_resol_binned_hpseta", "eta bin vs pT resolution; #eta; resol", 21, lowEta, highEta, 100, 0, 3);
   TH2D* pT_resol_binned_hpsPt = new TH2D ("pT_resol_binned_hpsPt", "pt bin vs pT resolution; pt offline; resol", 30, lowPt, highPt, 100, 0, 3);
+  
+
+  /*
+  // variable size binning
+  const double ptBinning = 
+  TH2D* pT_resol_binned = new TH2D ("pT_resol_binned_hpseta", "eta bin vs pT resolution; #eta; resol", 21, lowEta, highEta, 100, 0, 3);
+  TH2D* pT_resol_binned_hpsPt = new TH2D ("pT_resol_binned_hpsPt", "pt bin vs pT resolution; pt offline; resol", 30, lowPt, highPt, 100, 0, 3);
+  */
 
   TH1D* pt_resol_decMode[4];
 	TH1D* eta_resol_decMode[4];
@@ -618,25 +629,40 @@ c3->Print("phi_resol.pdf", "pdf");
   // Resolution as a function of eta
   const int nEtaBinsBuf = pT_resol_binned->GetNbinsX();
   const int nEtaBins = nEtaBinsBuf;
+  cout << "N bins eta: " << nEtaBins << endl;
   TH1D* projs [nEtaBins];
   
   for (int i = 0; i < nEtaBins; i++) projs[i] = pT_resol_binned->ProjectionY(Form("h_%i", i) , i+1, i+1);
   float RMS [nEtaBins];
   float RMSErr [nEtaBins];
 
-  //TF1* fGaus = new TF1 ("fGaus", "gaus", -20, -10);
+  TF1* fGaus = new TF1 ("fGaus", "gaus", -20, -10);
   for (int i = 0; i < nEtaBins; i++)
   {
   	float thisMean = projs[i]->GetMean();
     float thisRMS= projs[i]->GetRMS();
     float thisIntegral= projs[i]->Integral();
-    //fGaus->SetParameters (thisIntegral, thisMean, thisRMS);
-    //projs[i] -> Fit ("fGaus");
-    //RMS[i] = fGaus->GetParameter (2);
+    float thisPeak = projs[i]->GetBinCenter(projs[i]->GetMaximumBin());
+    cout << "Fit on bin eta: " << i << endl;
 
-    RMS[i] = thisRMS/thisMean;
-  	RMSErr[i] = projs[i]->GetRMSError()/thisMean; // supposing error on mean is neglibible
-  	//cout << i << " " << RMS[i] << " +/- " << RMSErr[i] <<  " ( " << i*2.1/nEtaBins << " - ) " << (i+1)*2.1/nEtaBins << endl;
+    // use gaussian fit
+    if (EvalResolWithFit)
+    {
+      fGaus->SetParameters (thisIntegral, thisMean, thisRMS);
+      projs[i] -> Fit ("fGaus", "", "", thisPeak-thisRMS, thisPeak+thisRMS);
+      RMS[i] = fGaus->GetParameter (2) / fGaus->GetParameter(1);
+      float errSigma = fGaus->GetParError (2);
+      float errMean = fGaus->GetParError (1);
+      RMSErr[i] = RMS[i]*(errSigma/RMS[i] + errMean/fGaus->GetParameter(1)); // use as fully correlated
+    }
+    // use simply RMS
+    
+    else
+    {
+      RMS[i] = thisRMS/thisMean;
+    	RMSErr[i] = projs[i]->GetRMSError()/thisMean; // supposing error on mean is neglibible
+    	cout << i << " " << RMS[i] << " +/- " << RMSErr[i] <<  " ( " << i*2.1/nEtaBins << " - ) " << (i+1)*2.1/nEtaBins << endl;
+    }
   }
 
   TH1D* gr = new TH1D ("resolution_vs_eta_plot", "; |#eta(offline)|; Energy response resolution", nEtaBins, lowEta, highEta);
@@ -664,13 +690,27 @@ c3->Print("phi_resol.pdf", "pdf");
     float thisMean = projs_pt[i]->GetMean();
     float thisRMS= projs_pt[i]->GetRMS();
     float thisIntegral= projs_pt[i]->Integral();
-    //fGaus->SetParameters (thisIntegral, thisMean, thisRMS);
-    //projs[i] -> Fit ("fGaus");
-    //RMS[i] = fGaus->GetParameter (2);
+    float thisPeak = projs_pt[i]->GetBinCenter(projs_pt[i]->GetMaximumBin());
+    cout << "Fit on bin pT: " << i << endl;
 
-    RMS_pt[i] = thisRMS/thisMean;
-    RMSErr_pt[i] = projs_pt[i]->GetRMSError()/thisMean;
-    cout << i << " " << RMS_pt[i] << " +/- " << RMSErr_pt[i] << endl;
+    // use gaussian fit
+    if (EvalResolWithFit)
+    {
+      fGaus->SetParameters (thisIntegral, thisMean, thisRMS);
+      projs_pt[i] -> Fit ("fGaus", "", "", thisPeak-thisRMS, thisPeak+thisRMS);
+      RMS_pt[i] = fGaus->GetParameter (2) / fGaus->GetParameter(1);
+      float errSigma = fGaus->GetParError (2);
+      float errMean = fGaus->GetParError (1);
+      RMSErr_pt[i] = RMS_pt[i]*(errSigma/RMS_pt[i] + errMean/fGaus->GetParameter(1)); // use as fully correlated
+    }
+
+    // use simply RMS
+    else
+    {
+      RMS_pt[i] = thisRMS/thisMean;
+      RMSErr_pt[i] = projs_pt[i]->GetRMSError()/thisMean;
+      cout << i << " " << RMS_pt[i] << " +/- " << RMSErr_pt[i] << endl;
+    }
   }
   
 
